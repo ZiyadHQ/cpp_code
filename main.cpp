@@ -3,7 +3,8 @@
 #include <string>
 #include <iostream>
 #include <random>
-#include <unistd.h>
+#include <stdint.h>
+// #include <unistd.h>
 
 #define WIDTH 60
 #define HEIGHT 40
@@ -113,7 +114,7 @@ char charSet[] =
         '@'};
 
 // Function to refresh the screen and print it
-void refreshScreen(__uint8_t buffer[])
+void refreshScreen(uint8_t buffer[])
 {
     printf("\033[H\033[2J\033[H");
     std::string displayOutput = "";
@@ -123,7 +124,7 @@ void refreshScreen(__uint8_t buffer[])
         for (int j = 0; j < WIDTH; j++) // Corrected the condition from 'i < WIDTH' to 'j < WIDTH'
         {
             int index = i * WIDTH + j;
-            __uint8_t value = buffer[index];
+            uint8_t value = buffer[index];
             char ascii_xel = charSet[value % charSetLength];
             displayOutput += ascii_xel; // ascii pixel
             displayOutput += ' ';       // Add space for readability
@@ -134,7 +135,7 @@ void refreshScreen(__uint8_t buffer[])
     std::cout.flush() << displayOutput;
 }
 
-void clearBuffer(__uint8_t buffer[], __uint8_t value)
+void clearBuffer(uint8_t buffer[], uint8_t value)
 {
 
     for (int i = 0; i < HEIGHT * WIDTH; i++)
@@ -143,7 +144,7 @@ void clearBuffer(__uint8_t buffer[], __uint8_t value)
     }
 }
 
-void randomizeBuffer(__uint8_t buffer[])
+void randomizeBuffer(uint8_t buffer[])
 {
 
     for (int i = 0; i < HEIGHT; i++)
@@ -156,7 +157,7 @@ void randomizeBuffer(__uint8_t buffer[])
     }
 }
 
-bool drawPixel(__uint8_t buffer[], int X, int Y, __uint8_t value)
+bool drawPixel(uint8_t buffer[], int X, int Y, uint8_t value)
 {
 
     if (X >= WIDTH || X < 0 || Y >= HEIGHT || Y < 0)
@@ -168,7 +169,7 @@ bool drawPixel(__uint8_t buffer[], int X, int Y, __uint8_t value)
     return true;
 }
 
-bool drawPixelV(__uint8_t buffer[], Vec2 position, __uint8_t value)
+bool drawPixelV(uint8_t buffer[], Vec2 position, uint8_t value)
 {
     int X = (int)position.X;
     int Y = (int)position.Y;
@@ -181,7 +182,7 @@ bool drawPixelV(__uint8_t buffer[], Vec2 position, __uint8_t value)
     return true;
 }
 
-void drawLine(__uint8_t buffer[], Vec2 startPos, Vec2 endPos, __uint8_t value)
+void drawLine(uint8_t buffer[], Vec2 startPos, Vec2 endPos, uint8_t value)
 {
     Vec2 direction = endPos - startPos;
     direction = direction.Normalize();
@@ -197,7 +198,7 @@ void drawLine(__uint8_t buffer[], Vec2 startPos, Vec2 endPos, __uint8_t value)
     }
 }
 
-void drawRectangle(__uint8_t buffer[], int X, int Y, int colWidth, int colHeight, __uint8_t value)
+void drawRectangle(uint8_t buffer[], int X, int Y, int colWidth, int colHeight, uint8_t value)
 {
 
     for (int i = 0; i < colWidth; i++)
@@ -218,7 +219,7 @@ int main()
     int direction = 0;
 
     // Initialize the buffer with some values (for testing, we fill it with random values)
-    __uint8_t buffer[WIDTH * HEIGHT];
+    uint8_t buffer[WIDTH * HEIGHT];
 
     Vec2 pos1 = {10, 10};
 
@@ -235,7 +236,7 @@ int main()
         drawPixelV(buffer, pos2, 9);
         refreshScreen(buffer);
         pos1 += velocity;
-        usleep(frameDelay);
+        // usleep(frameDelay);
     }
 
     printf("Hello World!\n");
