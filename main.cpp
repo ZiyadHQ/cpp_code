@@ -9,10 +9,10 @@
 #include <vector>
 
 #define WIDTH 90
-#define HEIGHT 40
+#define HEIGHT 50
 #define charSetLength 4
-#define FrameRate 2000000
-#define frameDelay 1000000 / FrameRate
+#define FrameRate 200
+#define frameDelay (1000000 / FrameRate)
 
 std::string charSet[] = {
     "░", // Light shade (U+2591)
@@ -24,23 +24,23 @@ std::string charSet[] = {
 uint8_t inverseCharSet(std::string symbol)
 {
 
-    if(symbol == "░")
+    if (symbol == "░")
     {
         return 0;
     }
-    else if(symbol == "▒")
+    else if (symbol == "▒")
     {
         return 0;
     }
-    else if(symbol == "▓")
+    else if (symbol == "▓")
     {
         return 0;
     }
-    else if(symbol == "█")
+    else if (symbol == "█")
     {
         return 0;
     }
-    else 
+    else
     {
         return 255;
     }
@@ -128,13 +128,6 @@ struct Vec2
     Vec2 operator-()
     {
         return {-this->X, -this->Y};
-    }
-
-    Vec2 ceilDifference()
-    {
-        Vec2 ceil = {ceilf(this->X), ceilf(this->Y)};
-        Vec2 copy = {this->X, this->Y};
-        return copy - ceil;
     }
 
     void operator+=(Vec2 other)
@@ -349,20 +342,20 @@ struct Particle
 
         this->position_old = this->position_new;
         this->position_new = new_position;
+
+        this->acceleration = Vec2{0, 0};
     }
 
     void pullBack(Vec2 center, float radius)
     {
-        float distance = center.Distance(this->position_new, center);
+        float distance = Vec2::Distance(this->position_new, center);
 
-        if (distance + this->radius > radius)
+        if (distance + this->radius > radius) // Include the particle's radius in the check
         {
             Vec2 direction = this->position_new - center;
-
             direction = direction.Normalize();
 
-            float overstep = distance - radius;
-
+            float overstep = distance + this->radius - radius; // Correct overstep calculation
             this->position_new -= direction * overstep;
         }
     }
@@ -421,11 +414,14 @@ int main()
 
     for (size_t i = 0; i < 10; i++)
     {
-        listOfParticles.push_back(Particle(center + Vec2{(float)i, 0}, Vec2{0, 1}, 2));
+        listOfParticles.push_back(Particle(center + Vec2{(float)i, 0}, Vec2{0, 1}, 1));
     }
 
     auto previous_time = std::chrono::high_resolution_clock::now();
     float dt = 0.0f;
+
+    int framesPerDrop = 10;
+    int currFrame = framesPerDrop;
 
     while (true)
     {
@@ -434,9 +430,9 @@ int main()
         previous_time = current_time;
         clearBuffer(buffer, 0);
         drawCircleV(buffer, center, 100, HEIGHT / 2);
-        for (size_t i = 0; i < listOfParticles.size() - 1; i++)
+        for (size_t i = 0; i < listOfParticles.size(); i++)
         {
-            for (size_t j = i + 1; j < listOfParticles.size() - 1; j++)
+            for (size_t j = i + 1; j < listOfParticles.size(); j++)
             {
                 listOfParticles[i].CheckCollision(listOfParticles[j]);
             }
@@ -444,6 +440,7 @@ int main()
         for (Particle &p : listOfParticles)
         {
             p.step(dt);
+            p.acceleration = Vec2{0, 10};
             p.pullBack(center, HEIGHT / 2);
         }
         int color = 100;
@@ -451,9 +448,13 @@ int main()
         {
             p.draw(buffer, color++);
         }
+        if(currFrame-- == 0)
+        {
+            currFrame = framesPerDrop;
+            listOfParticles.push_back(Particle(center, Vec2{100.0f/dt, 100.0f/dt}, 1));
+        }
         refreshScreen(buffer);
         usleep(frameDelay);
-        // printf("dt: %f", dt);
     }
 
     printf("Hello World!\n");
